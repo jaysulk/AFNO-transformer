@@ -77,6 +77,6 @@ class AFNO2D(nn.Module):
 
         x = F.softshrink(o2, lambd=self.sparsity_threshold)
         x = idht2d(x)
-        #x = x.reshape(B, N, C)
+        x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x + bias
