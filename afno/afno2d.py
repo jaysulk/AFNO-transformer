@@ -7,12 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
-    X = torch.fft.fft2(x, dim=(-2, -1))
+    X = torch.fft.fft(x)
     X = X.real - X.imag
     return X
 
 def idht2d(X: torch.Tensor):
-    n = X.shape[-2] * X.shape[-1]
+    dims = X.size()
+    n = torch.prod(torch.tensor(dims)).item()
     X = dht2d(X)
     x = X / n
     return x
