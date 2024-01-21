@@ -18,16 +18,44 @@ def idht2d(X: torch.Tensor):
     x = X / n
     return x
 
+#def convolution_multiply2d(x, y):
+#    X = dht2d(x)
+#    Y = dht2d(y)
+#    Xflip = torch.roll(torch.flip(x, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
+#    Yflip = torch.roll(torch.flip(y, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
+#    Yplus = Y + Yflip
+#    Yminus = Y - Yflip
+#    Z = 0.5 * (torch.einsum("aefgh,ijk->aefij", X, Yplus) + torch.einsum("aefgh,ijk->aefij", Xflip, Yminus))
+#    z = idht2d(Z)
+#    return z
+
+def flip_periodic(x):
+    # Check if the tensor is at least 2D
+    if x.ndim < 2:
+        raise ValueError("Input tensor must be at least 2D")
+
+    # Extract the first row and first column
+    first_row = x[0:1, :]
+    first_col = x[:, 0:1]
+
+    # Flip the rest of the tensor
+    flipped = torch.flip(x[1:, 1:], [0, 1])
+
+    # Concatenate to form the final flipped tensor
+    flipped_with_first_col = torch.cat((first_col[1:], flipped), dim=0)
+    flipped_with_first_row = torch.cat((first_row, flipped_with_first_col), dim=1)
+
+    return flipped_with_first_row
+
 def convolution_multiply2d(x, y):
     X = dht2d(x)
     Y = dht2d(y)
-    Xflip = torch.roll(torch.flip(x, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
-    Yflip = torch.roll(torch.flip(y, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
-    Yplus = Y + Yflip
-    Yminus = Y - Yflip
-    Z = 0.5 * (torch.einsum("aefgh,ijk->aefij", X, Yplus) + torch.einsum("aefgh,ijk->aefij", Xflip, Yminus))
-    z = idht2d(Z)
-    return z
+    Xflip = flip_periodic(X)
+    Yflip = flip_periodic(Y)
+    Yeven = 0.5 * (Y + Yflip)
+    Yodd  = 0.5 * (Y - Yflip)
+    Z = X * Yeven + Xflip * Yodd
+    return idht2d(Z)   
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
