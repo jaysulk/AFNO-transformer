@@ -53,10 +53,10 @@ class AFNO2D(nn.Module):
         x = x.float()
         B, N, C = x.shape
 
-        if spatial_size == None:
-            H = W = int(math.sqrt(N))
-        else:
-            H, W = spatial_size
+        #if spatial_size == None:
+        H = W = int(math.sqrt(N))
+        #else:
+        #    H, W = spatial_size
 
         x = x.reshape(B, H, W, C)
         x = dht2d(x)
