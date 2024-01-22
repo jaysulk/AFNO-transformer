@@ -48,17 +48,24 @@ class AFNO2D(nn.Module):
 
     def forward(self, x):
         bias = x
+
         dtype = x.dtype
         x = x.float()
         B, N, C = x.shape
-        H = W = int(math.sqrt(N))
+
+        if spatial_size == None:
+            H = W = int(math.sqrt(N))
+        else:
+            H, W = spatial_size
 
         x = x.reshape(B, H, W, C)
         x = dht2d(x)
-        x = x.reshape(B, H, W, self.num_blocks, self.block_size)
+        x = x.reshape(B, x.shape[1], x.shape[2], self.num_blocks, self.block_size)
 
         o1 = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
         o2 = torch.zeros(x.shape, device=x.device)
+        #o2_real = torch.zeros(x.shape, device=x.device)
+        #o2_imag = torch.zeros(x.shape, device=x.device)
 
         total_modes = H * W
         kept_modes = int(math.sqrt(total_modes) * self.hard_thresholding_fraction)
