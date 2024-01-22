@@ -49,16 +49,14 @@ def flip_periodic(x):
     return flipped_with_first_row
 
 def convolution_multiply2d(x, y):
-    #X = dht2d(x)
-    #Y = dht2d(y)
-    X = x
-    Y = y
+    X = dht2d(x)
+    Y = dht2d(y)
     Xflip = flip_periodic(X)
     Yflip = flip_periodic(Y)
     Yeven = 0.5 * (Y + Yflip)
     Yodd  = 0.5 * (Y - Yflip)
     Z = X * Yeven + Xflip * Yodd
-    return Z
+    return idht2d(Z)
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
