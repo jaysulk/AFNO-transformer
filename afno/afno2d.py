@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
-    X = torch.fft.fft(x)
+    X = rfft2(x, dim=(1, 2), norm="ortho")
     X = X.real - X.imag
     return X
 
