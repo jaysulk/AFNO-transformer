@@ -31,20 +31,25 @@ def radix2_fht_1d(x):
     return combined
 
 def dht2d(x):
-    """ Compute the 2D Hartley Transform """
-    if x.dim() != 2:
-        raise ValueError("Input must be a 2D tensor")
+    """ Compute the 2D Hartley Transform for each channel of each image """
+    if x.dim() != 4:
+        raise ValueError("Input must be a 4D tensor representing a batch of images")
 
-    rows, cols = x.shape
-    # Apply 1D FHT to each row
-    for i in range(rows):
-        x[i, :] = radix2_fht_1d(x[i, :])
+    batch_size, channels, rows, cols = x.shape
 
-    # Apply 1D FHT to each column
-    for j in range(cols):
-        x[:, j] = radix2_fht_1d(x[:, j])
+    # Applying 2D FHT to each channel of each image
+    for i in range(batch_size):
+        for c in range(channels):
+            # Apply 1D FHT to each row
+            for r in range(rows):
+                x[i, c, r, :] = radix2_fht_1d(x[i, c, r, :])
+            
+            # Apply 1D FHT to each column
+            for col in range(cols):
+                x[i, c, :, col] = radix2_fht_1d(x[i, c, :, col])
 
     return x
+
 
 def idht2d(X: torch.Tensor):
     dims = X.size()
