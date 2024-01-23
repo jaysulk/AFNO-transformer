@@ -1,48 +1,13 @@
-
 import math
 import torch
 import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 
-def hartley_kernel(n):
-    """ Returns the Hartley kernel for a given size n using PyTorch """
-    theta = 2 * torch.pi / n
-    return torch.cos(torch.arange(n) * theta) + torch.sin(torch.arange(n) * theta)
-
-def radix2_fht_1d(x):
-    """ Recursive implementation of the Radix-2 Fast Hartley Transform for 1D data using PyTorch """
-    N = x.shape[0]
-
-    # Base case
-    if N <= 1:
-        return x
-
-    # Split the sequence into even and odd parts
-    even = radix2_fht_1d(x[::2])
-    odd = radix2_fht_1d(x[1::2])
-
-    # Combine
-    combined = torch.zeros(N)
-    H = hartley_kernel(N)
-    for k in range(N // 2):
-        combined[k] = even[k] + H[k] * odd[k]
-        combined[k + N // 2] = even[k] - H[k] * odd[k]
-
-    return combined
-
-def dht2d(x):
-    """ Compute the 2D Hartley Transform """
-    rows, cols = x.shape
-    # Apply 1D FHT to each row
-    for i in range(rows):
-        x[i, :] = radix2_fht_1d(x[i, :])
-
-    # Apply 1D FHT to each column
-    for j in range(cols):
-        x[:, j] = radix2_fht_1d(x[:, j])
-
-    return x
+def dht2d(x: torch.Tensor):
+    X = torch.fft.rfft2(x, dim=(1, 2), norm="ortho")
+    X = X.real - X.imag
+    return X
 
 def idht2d(X: torch.Tensor):
     dims = X.size()
