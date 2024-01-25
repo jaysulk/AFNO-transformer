@@ -5,13 +5,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
-#    X = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
+    X = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
 #    X = X.real - X.imag
-#    return X
-	fft = torch.fft.rfft(x, 2, normalized=True, onesided=False)
-	dht = fft[:, :, :, :, -2] - fft[:, :, :, :, -1]
-	return dht
-
+    X = X[:, :, :, :, -2] - X[:, :, :, :, -1]
+    return X
 
 def idht2d(X: torch.Tensor):
     dims = X.size()
