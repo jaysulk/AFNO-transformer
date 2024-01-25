@@ -8,7 +8,7 @@ def dht2d(x: torch.Tensor):
 #    X = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
 #    X = X.real - X.imag
 #    return X
-	fft = torch.rfft(x, 2, normalized=True, onesided=False)
+	fft = torch.fft.rfft(x, 2, normalized=True, onesided=False)
 	dht = fft[:, :, :, :, -2] - fft[:, :, :, :, -1]
 	return dht
 
