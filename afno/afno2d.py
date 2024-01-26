@@ -6,8 +6,8 @@ import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
     X = torch.fft.fft(x)
-#    X = X.real - X.imag
-    X = X[:, :, :, -2] - X[:, :, :, -1]
+    X = X.real - X.imag
+#    X = X[:, :, :, -2] - X[:, :, :, -1]
     return X
 
 def idht2d(X: torch.Tensor):
