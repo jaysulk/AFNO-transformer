@@ -22,11 +22,15 @@ def dht2d(x: torch.Tensor):
     return X_padded
 
 def idht2d(X: torch.Tensor):
-    dims = X.size()
-    n = torch.prod(torch.tensor(dims)).item()
-    X = dht2d(X)
-    x = X / n
-    return x
+    # Perform the inverse operation of dht2d
+    # For the Hartley transform, the inverse is similar to the forward transform
+    X_inv = torch.fft.irfft2(X.real - X.imag, s=X.shape[-2:], norm="ortho")
+
+    # The scaling factor is not needed for the 'ortho' normalization in rfft2 and irfft2
+    # If you use a different normalization, adjust the scaling accordingly
+    # x = X_inv / n
+
+    return X_inv
 
 def convolution_multiply2d(x, y):
     X = dht2d(x)
