@@ -15,13 +15,6 @@ def idht2d(X: torch.Tensor):
     x_reconstructed = X_inv.real
     return x_reconstructed
 
-def convolution_multiply2d(x, y):
-    X = dht2d(x)
-    Y = dht2d(y)
-    Z = torch.mul(X, Y)
-    z = idht2d(Z)
-    return z
-
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
         super().__init__()
