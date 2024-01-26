@@ -20,11 +20,19 @@ def idht2d(X: torch.Tensor):
 def convolution_multiply2d(x, y):
     X = dht2d(x)
     Y = dht2d(y)
+
+    # Flipping and rolling x and y for the convolution operation
     Xflip = torch.roll(torch.flip(x, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
     Yflip = torch.roll(torch.flip(y, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
+
+    # Padding Xflip and Yflip to match the shape of X and Y
+    Xflip = F.pad(Xflip, (0, 0, 0, Y.shape[-1] - Xflip.shape[-1]))
+    Yflip = F.pad(Yflip, (0, 0, 0, X.shape[-1] - Yflip.shape[-1]))
+
     Yplus = Y + Yflip
     Yminus = Y - Yflip
-    Z = 0.5 * (torch.einsum("aefgh,ijk->aefij", X, Yplus) + torch.einsum("aefgh,ijk->aefij", Xflip, Yminus))
+
+    Z = 0.5 * (torch.einsum("bchw,abcd->awhd", X, Yplus) + torch.einsum("bchw,abcd->awhd", Xflip, Yminus))
     z = idht2d(Z)
     return z
 
