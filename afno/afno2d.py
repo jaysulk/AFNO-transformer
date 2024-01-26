@@ -69,6 +69,7 @@ class AFNO2D(nn.Module):
 
         total_modes = N // 2 + 1
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
+        
         o1[:, :kept_modes, :kept_modes] = F.relu(
             convolution_multiply2d(x[:, :kept_modes, :kept_modes], self.w1[0]) + \
             convolution_multiply2d(x[:, :kept_modes, :kept_modes], self.w1[1]) + \
