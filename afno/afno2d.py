@@ -20,7 +20,7 @@ def convolution_multiply2d(x, y):
     Yflip = torch.roll(torch.flip(y, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
     Yplus = Y + Yflip
     Yminus = Y - Yflip
-    Z = 0.5 * (torch.einsum("bchw,abcd->awhd", X, Yplus) + torch.einsum("bchw,abcd->awhd", Xflip, Yminus))
+    Z = 0.5 * (torch.einsum("aefgh,ijk->aefij", X, Yplus) + torch.einsum("aefgh,ijk->aefij", Xflip, Yminus))
     z = idht2d(Z)
     return z
 
