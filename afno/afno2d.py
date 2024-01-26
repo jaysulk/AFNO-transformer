@@ -10,11 +10,9 @@ def dht2d(x: torch.Tensor):
     return X
 
 def idht2d(X: torch.Tensor):
-    X_complex = torch.complex(X, torch.zeros_like(X))
-    X_inv = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
-    x_reconstructed = X_inv.real
-    x_reconstructed = torch.complex(x_reconstructed, torch.zeros_like(x_reconstructed))
-    return x_reconstructed
+    X = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
+    X = X.real - X.imag
+    return X
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
@@ -67,25 +65,25 @@ class AFNO2D(nn.Module):
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
 
         o1_real[:, :, :kept_modes] = F.relu(
-            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[0]) + \
-            #torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[1]) + \
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[0]) -\
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[1]) + \
             self.b1[0]
         )
 
         o1_imag[:, :, :kept_modes] = F.relu(
-            #torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[0]) + \
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[0]) + \
             torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[1]) + \
             self.b1[1]
         )
 
         o2_real[:, :, :kept_modes] = (
-            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[0]) + \
-            #torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[1]) + \
+            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[0]) - \
+            torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[1]) + \
             self.b2[0]
         )
 
         o2_imag[:, :, :kept_modes] = (
-            #torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[0]) + \
+            torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[0]) + \
             torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[1]) + \
             self.b2[1]
         )
