@@ -57,20 +57,43 @@ class AFNO2D(nn.Module):
         total_modes = H * W
         kept_modes = int(math.sqrt(total_modes) * self.hard_thresholding_fraction)
 
-        o1[:, :kept_modes, :kept_modes] = F.relu(
-            convolution_multiply2d(x[:, :kept_modes, :kept_modes], self.w1[0]) + \
-            convolution_multiply2d(x[:, :kept_modes, :kept_modes], self.w1[1]) + \
+        o1_real = torch.zeros([B, x.shape[1], x.shape[2], self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
+        o1_imag = torch.zeros([B, x.shape[1], x.shape[2], self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
+        o2_real = torch.zeros(x.shape, device=x.device)
+        o2_imag = torch.zeros(x.shape, device=x.device)
+
+        total_modes = N // 2 + 1
+        kept_modes = int(total_modes * self.hard_thresholding_fraction)
+
+        o1_real[:, :, :kept_modes] = F.relu(
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[0]) - \
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[1]) + \
             self.b1[0]
         )
 
-        o2[:, :kept_modes, :kept_modes] = (
-            convolution_multiply2d(o1[:, :kept_modes, :kept_modes], self.w2[0]) + \
-            convolution_multiply2d(o1[:, :kept_modes, :kept_modes], self.w2[1]) + \
+        o1_imag[:, :, :kept_modes] = F.relu(
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[0]) + \
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[1]) + \
+            self.b1[1]
+        )
+
+        o2_real[:, :, :kept_modes] = (
+            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[0]) - \
+            torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[1]) + \
             self.b2[0]
         )
 
-        x = F.softshrink(o2, lambd=self.sparsity_threshold)
-        x = idht2d(x)
+        o2_imag[:, :, :kept_modes] = (
+            torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[0]) + \
+            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[1]) + \
+            self.b2[1]
+        )
+
+        x = torch.stack([o2_real, o2_imag], dim=-1)
+        x = F.softshrink(x, lambd=self.sparsity_threshold)
+        x = torch.view_as_complex(x)
+        x = x.reshape(B, x.shape[1], x.shape[2], C)
+        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm="ortho")
         x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x + bias
