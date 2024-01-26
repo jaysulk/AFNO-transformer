@@ -7,13 +7,13 @@ import torch.nn.functional as F
 def dht2d(x: torch.Tensor):
     fft = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
     X = fft[:, :, :, -2] - fft[:, :, :, -1]
-    X = torch.complex(X, torch.zeros_like(X))
+    #X = torch.complex(X, torch.zeros_like(X))
     return X
 
 def idht2d(X: torch.Tensor):
     fft = torch.fft.ifft2(X, s=X.shape[-2:], norm="ortho")
     X = fft[:, :, :, -2] - fft[:, :, :, -1]
-    X = torch.complex(X, torch.zeros_like(X))
+    #X = torch.complex(X, torch.zeros_like(X))
     return X
 
 class AFNO2D(nn.Module):
