@@ -93,7 +93,7 @@ class AFNO2D(nn.Module):
         x = F.softshrink(x, lambd=self.sparsity_threshold)
         x = torch.view_as_complex(x)
         x = x.reshape(B, x.shape[1], x.shape[2], C)
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm="ortho")
+        x = idht2d(x)
         x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x + bias
