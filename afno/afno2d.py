@@ -67,26 +67,26 @@ class AFNO2D(nn.Module):
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
 
         o1_real[:, :, :kept_modes] = F.relu(
-            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[0]) - \
-            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[1]) + \
+            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[0]) + \
+            #torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[1]) + \
             self.b1[0]
         )
 
         o1_imag[:, :, :kept_modes] = F.relu(
             torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].imag, self.w1[0]) + \
-            torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[1]) + \
+            #torch.einsum('...bi,bio->...bo', x[:, :, :kept_modes].real, self.w1[1]) + \
             self.b1[1]
         )
 
         o2_real[:, :, :kept_modes] = (
-            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[0]) - \
-            torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[1]) + \
+            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[0]) + \
+            #torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[1]) + \
             self.b2[0]
         )
 
         o2_imag[:, :, :kept_modes] = (
             torch.einsum('...bi,bio->...bo', o1_imag[:, :, :kept_modes], self.w2[0]) + \
-            torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[1]) + \
+            #torch.einsum('...bi,bio->...bo', o1_real[:, :, :kept_modes], self.w2[1]) + \
             self.b2[1]
         )
 
