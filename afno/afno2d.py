@@ -5,10 +5,21 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
+    # Perform real FFT
     X = torch.fft.rfft2(x, dim=(1, 2), norm="ortho")
+
+    # Calculate DHT (Discrete Hartley Transform)
     X = X.real - X.imag
-#    X = X[:, :, :, -2] - X[:, :, :, -1]
-    return X
+
+    # Padding to match the original last dimension size
+    # The last dimension of the output of rfft2 is (input_size // 2 + 1)
+    # We need to calculate how much padding is needed to restore it to the original size
+    last_dim_padding = x.shape[-1] - X.shape[-1]
+
+    # Apply padding to the last dimension
+    X_padded = F.pad(X, (0, last_dim_padding))
+
+    return X_padded
 
 def idht2d(X: torch.Tensor):
     dims = X.size()
