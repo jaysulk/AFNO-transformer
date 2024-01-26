@@ -15,6 +15,30 @@ def idht2d(X: torch.Tensor):
     x_reconstructed = X_inv.real
     return x_reconstructed
 
+def hartley_wavelet_transform(x: torch.Tensor, wavelet='haar'):
+    # Apply Hartley Transform
+    X = dht2d(x)
+
+    # Convert to numpy for wavelet transform (as pywt works with numpy arrays)
+    X_np = X.detach().numpy()
+
+    # Apply Wavelet Transform
+    coeffs = pywt.wavedec2(X_np, wavelet)
+
+    return coeffs
+
+def inverse_hartley_wavelet_transform(coeffs, wavelet='haar'):
+    # Apply Inverse Wavelet Transform
+    X_np = pywt.waverec2(coeffs, wavelet)
+
+    # Convert back to torch tensor
+    X = torch.tensor(X_np, dtype=torch.float32)
+
+    # Apply Inverse Hartley Transform
+    x_reconstructed = idht2d(X)
+
+    return x_reconstructed
+
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
         super().__init__()
@@ -46,7 +70,7 @@ class AFNO2D(nn.Module):
         #    H, W = spatial_size
 
         x = x.reshape(B, H, W, C)
-        x = dht2d(x)
+        x = hartley_wavelet_transform(x)
         x = x.reshape(B, x.shape[1], x.shape[2], self.num_blocks, self.block_size)
 
         o1 = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
@@ -93,7 +117,7 @@ class AFNO2D(nn.Module):
         x = F.softshrink(x, lambd=self.sparsity_threshold)
         x = torch.view_as_complex(x)
         x = x.reshape(B, x.shape[1], x.shape[2], C)
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm="ortho")
+        x = inverse_hartley_wavelet_transform(x)
         x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x + bias
