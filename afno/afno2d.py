@@ -64,8 +64,8 @@ class AFNO2D(nn.Module):
 
         o1 = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
         o2 = torch.zeros(x.shape, device=x.device)
-        #o2_real = torch.zeros(x.shape, device=x.device)
-        #o2_imag = torch.zeros(x.shape, device=x.device)
+        o2_real = torch.zeros(x.shape, device=x.device)
+        o2_imag = torch.zeros(x.shape, device=x.device)
 
         total_modes = H * W
         kept_modes = int(math.sqrt(total_modes) * self.hard_thresholding_fraction)
