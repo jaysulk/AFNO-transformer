@@ -13,6 +13,7 @@ def idht2d(X: torch.Tensor):
     X_complex = torch.complex(X, torch.zeros_like(X))
     X_inv = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
     x_reconstructed = X_inv.real
+    x_reconstructed = torch.complex(x_reconstructed, torch.zeros_like(x_reconstructed))
     return x_reconstructed
 
 class AFNO2D(nn.Module):
