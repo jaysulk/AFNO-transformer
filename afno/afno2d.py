@@ -25,11 +25,12 @@ def convolution_multiply2d(x, y):
     Xflip = torch.roll(torch.flip(x, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
     Yflip = torch.roll(torch.flip(y, [-2, -1]), shifts=(1, 1), dims=(-2, -1))
 
-    # Padding Xflip and Yflip to match the shape of X and Y if necessary
-    if Xflip.shape[-1] < X.shape[-1]:
-        Xflip = F.pad(Xflip, (0, X.shape[-1] - Xflip.shape[-1], 0, 0))
-    if Yflip.shape[-1] < Y.shape[-1]:
-        Yflip = F.pad(Yflip, (0, Y.shape[-1] - Yflip.shape[-1], 0, 0))
+    # Padding Xflip and Yflip to match the shape of X and Y in all dimensions
+    padding_Xflip = [0, X.shape[-1] - Xflip.shape[-1], 0, X.shape[-2] - Xflip.shape[-2]]
+    padding_Yflip = [0, Y.shape[-1] - Yflip.shape[-1], 0, Y.shape[-2] - Yflip.shape[-2]]
+
+    Xflip = F.pad(Xflip, padding_Xflip)
+    Yflip = F.pad(Yflip, padding_Yflip)
 
     Yplus = Y + Yflip
     Yminus = Y - Yflip
