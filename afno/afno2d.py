@@ -10,7 +10,7 @@ def dht2d(x: torch.Tensor):
     return X
 
 def idht2d(X: torch.Tensor):
-    X_inv = torch.fft.ifft2(X.real - X.imag, s=X.shape[-2:], norm="ortho")
+    X_inv = torch.fft.ifft2(X, s=X.shape[-2:], norm="ortho")
     return X_inv
 
 def convolution_multiply2d(x, y):
