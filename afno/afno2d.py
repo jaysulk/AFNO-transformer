@@ -10,9 +10,9 @@ def dht2d(x: torch.Tensor):
     return X
 
 def idht2d(X: torch.Tensor):
-    X = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
-    X = X.real - X.imag
-    return X
+    X_complex = torch.complex(X, torch.zeros_like(X))
+    X_inv = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
+    return X_inv
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
@@ -93,6 +93,7 @@ class AFNO2D(nn.Module):
         x = torch.view_as_complex(x)
         x = x.reshape(B, x.shape[1], x.shape[2], C)
         x = idht2d(x)
+        x = x.real - x.imag
         x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x + bias
