@@ -5,31 +5,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
-    # Perform real FFT
-    X = torch.fft.rfft2(x, dim=(1, 2), norm="ortho")
-
-    # Calculate DHT (Discrete Hartley Transform)
+    X = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
     X = X.real - X.imag
-
-    # Padding to match the original last dimension size
-    # The last dimension of the output of rfft2 is (input_size // 2 + 1)
-    # We need to calculate how much padding is needed to restore it to the original size
-    last_dim_padding = x.shape[-1] - X.shape[-1]
-
-    # Apply padding to the last dimension
-    X_padded = F.pad(X, (0, last_dim_padding))
-
-    return X_padded
+    return X
 
 def idht2d(X: torch.Tensor):
-    # Perform the inverse operation of dht2d
-    # For the Hartley transform, the inverse is similar to the forward transform
-    X_inv = torch.fft.irfft2(X.real - X.imag, s=X.shape[-2:], norm="ortho")
-
-    # The scaling factor is not needed for the 'ortho' normalization in rfft2 and irfft2
-    # If you use a different normalization, adjust the scaling accordingly
-    # x = X_inv / n
-
+    X_inv = torch.fft.ifft2(X.real - X.imag, s=X.shape[-2:], norm="ortho")
     return X_inv
 
 def convolution_multiply2d(x, y):
