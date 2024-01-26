@@ -11,7 +11,7 @@ def dht2d(x: torch.Tensor):
     return X
 
 def idht2d(X: torch.Tensor):
-    X = torch.fft.ifft2(X_complex, s=X.shape[-2:], norm="ortho")
+    X = torch.fft.ifft2(X, s=X.shape[-2:], norm="ortho")
     X = X.real - X.imag
     X = torch.complex(X, torch.zeros_like(X))
     return X
