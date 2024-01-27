@@ -5,16 +5,27 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def dht2d(x: torch.Tensor):
+    # Compute the 2D FFT
     fft = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
-    X = fft[:, :, :, -2] - fft[:, :, :, -1]
-    #X = torch.complex(X, torch.zeros_like(X))
-    return X
 
-def idht2d(X: torch.Tensor):
-    fft = torch.fft.ifft2(X, s=X.shape[-2:], norm="ortho")
-    X = fft[:, :, :, -2] - fft[:, :, :, -1]
-    #X = torch.complex(X, torch.zeros_like(X))
-    return X
+    # Calculate the Discrete Hartley Transform using the real and imaginary parts of the FFT
+    H = fft.real + fft.imag
+
+    return H
+
+def idht2d(H: torch.Tensor):
+    # The inverse DHT is similar to the forward DHT
+    # Compute the 2D inverse FFT
+    ifft = torch.fft.ifft2(H, dim=(1, 2), norm="ortho")
+
+    # Calculate the inverse Discrete Hartley Transform using the real and imaginary parts of the inverse FFT
+    x_reconstructed = ifft.real + ifft.imag
+
+    # Normalization: Divide by the total number of elements
+    # This step is already handled by the 'ortho' normalization in ifft2
+    # x_reconstructed /= (H.size(-2) * H.size(-1))
+
+    return x_reconstructed
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
@@ -48,6 +59,7 @@ class AFNO2D(nn.Module):
 
         x = x.reshape(B, H, W, C)
         x = dht2d(x)
+        x = torch.complex(x, torch.zeros_like(x))
         x = x.reshape(B, x.shape[1], x.shape[2], self.num_blocks, self.block_size)
 
         o1 = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
