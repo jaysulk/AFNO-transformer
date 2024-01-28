@@ -9,7 +9,7 @@ def dht2d(x: torch.Tensor):
     fft = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
 
     # Calculate the Discrete Hartley Transform using the real and imaginary parts of the FFT
-    H = fft.real + fft.imag
+    H = fft.real - fft.imag
 
     return H
 
@@ -19,7 +19,7 @@ def idht2d(H: torch.Tensor):
     ifft = torch.fft.ifft2(H, dim=(1, 2), norm="ortho")
 
     # Calculate the inverse Discrete Hartley Transform using the real and imaginary parts of the inverse FFT
-    x_reconstructed = ifft.real + ifft.imag
+    x_reconstructed = ifft.real - ifft.imag
 
     # Normalization: Divide by the total number of elements
     # This step is already handled by the 'ortho' normalization in ifft2
