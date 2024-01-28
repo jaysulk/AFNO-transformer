@@ -13,19 +13,14 @@ def dht2d(x: torch.Tensor):
 
     return H
 
-def idht2d(H: torch.Tensor):
-    # The inverse DHT is similar to the forward DHT
-    # Compute the 2D inverse FFT
-    ifft = torch.fft.ifft2(H, dim=(1, 2), norm="ortho")
-
-    # Calculate the inverse Discrete Hartley Transform using the real and imaginary parts of the inverse FFT
-    x_reconstructed = ifft.real - ifft.imag
-
-    # Normalization: Divide by the total number of elements
-    # This step is already handled by the 'ortho' normalization in ifft2
-    # x_reconstructed /= (H.size(-2) * H.size(-1))
-
-    return x_reconstructed
+def idht2d(x):
+    # Assume that dht2d is already defined for NumPy
+    # Get the dimensions of X
+    dims = x.shape
+    n = np.prod(dims)
+    dht = dht2d(x)
+    H = dht / n
+    return H
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
