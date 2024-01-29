@@ -16,8 +16,8 @@ def dht2d(x: torch.Tensor):
 def idht2d(x):
     # Assume that dht2d is already defined for NumPy
     # Get the dimensions of X
-    dims = x.shape
-    n = np.prod(dims)
+    dims = x.size()
+    n = torch.prod(torch.tensor(dims)).item()
     dht = dht2d(x)
     H = dht / n
     return H
