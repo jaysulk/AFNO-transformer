@@ -85,4 +85,4 @@ class AFNO2D(nn.Module):
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm="ortho")
         x = x.reshape(B, N, C)
         x = x.type(dtype)
-        return x + bias
+        return x.real + bias.real
