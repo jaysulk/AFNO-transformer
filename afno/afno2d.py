@@ -10,10 +10,10 @@ def reverse(x: torch.Tensor) -> torch.Tensor:
 
 def dht2d(x: torch.Tensor) -> torch.Tensor:
     N = x.size(-1)
-    n = torch.arange(N, device=x.device)
+    n = torch.arange(N, device=x.device, dtype=x.dtype)
     k = n.view(-1, 1)
     
-    # Calculate the Hartley kernel (cas function)
+    # Calculate the Hartley kernel (cas function) with the same dtype as the input
     cas = torch.cos(2 * torch.pi * k * n / N) + torch.sin(2 * torch.pi * k * n / N)
     
     # Perform the matrix multiplication between input and the Hartley kernel
