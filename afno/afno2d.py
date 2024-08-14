@@ -10,15 +10,25 @@ def reverse(x: torch.Tensor) -> torch.Tensor:
 
 def dht2d(x: torch.Tensor) -> torch.Tensor:
     N = x.size(-1)
-    n = torch.arange(N, device=x.device, dtype=x.dtype)
+    
+    # Use float dtype for creating the Hartley kernel
+    n = torch.arange(N, device=x.device, dtype=torch.float32)
     k = n.view(-1, 1)
     
-    # Calculate the Hartley kernel (cas function) with the same dtype as the input
+    # Calculate the Hartley kernel (cas function)
     cas = torch.cos(2 * torch.pi * k * n / N) + torch.sin(2 * torch.pi * k * n / N)
     
-    # Perform the matrix multiplication between input and the Hartley kernel
-    X = torch.matmul(x, cas)
+    # If x is complex, separate real and imaginary parts and process them separately
+    if x.is_complex():
+        real_part = torch.matmul(x.real, cas)
+        imag_part = torch.matmul(x.imag, cas)
+        X = real_part - imag_part
+    else:
+        # Perform the matrix multiplication between input and the Hartley kernel
+        X = torch.matmul(x, cas)
+    
     return X
+
 
 def idht2d(X: torch.Tensor) -> torch.Tensor:
     N = X.size(-1)
