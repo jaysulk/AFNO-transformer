@@ -4,23 +4,33 @@ import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 
-def dht2d(x: torch.Tensor):
-    # Compute the 2D FFT
-    fft = torch.fft.fft2(x, dim=(1, 2), norm="ortho")
+def reverse(x: torch.Tensor) -> torch.Tensor:
+    N = x.size(-1)
+    return torch.roll(x.flip(-1), shifts=N+1, dims=-1)
 
-    # Calculate the Discrete Hartley Transform using the real and imaginary parts of the FFT
-    H = fft.real - fft.imag
+def dht2d(x: torch.Tensor) -> torch.Tensor:
+    N = x.size(-1)
+    n = torch.arange(N, device=x.device)
+    k = n.view(-1, 1)
+    
+    # Calculate the Hartley kernel (cas function)
+    cas = torch.cos(2 * torch.pi * k * n / N) + torch.sin(2 * torch.pi * k * n / N)
+    
+    # Perform the matrix multiplication between input and the Hartley kernel
+    X = torch.matmul(x, cas)
+    return X
 
-    return H
-
-def idht2d(x):
-    # Assume that dht2d is already defined for NumPy
-    # Get the dimensions of X
-    dims = x.size()
-    n = torch.prod(torch.tensor(dims)).item()
-    dht = dht2d(x)
-    H = dht / n
-    return H
+def idht2d(X: torch.Tensor) -> torch.Tensor:
+    N = X.size(-1)
+    n = torch.prod(torch.tensor(X.size())).item()
+    
+    # Perform the forward DHT on the input
+    x_reconstructed = dht(X)
+    
+    # Scale the result by the number of elements
+    x_reconstructed /= n
+    
+    return x_reconstructed
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
