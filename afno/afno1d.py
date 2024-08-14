@@ -9,17 +9,34 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-def dht(x: torch.Tensor):
-    X = torch.fft.fft(x)
-    X = X.real - X.imag
+def reverse(x: torch.Tensor) -> torch.Tensor:
+    N = x.size(-1)
+    return torch.roll(x.flip(-1), shifts=N+1, dims=-1)
+
+def dht(x: torch.Tensor) -> torch.Tensor:
+    N = x.size(-1)
+    n = torch.arange(N, device=x.device)
+    k = n.view(-1, 1)
+    
+    # Calculate the Hartley kernel (cas function)
+    cas = torch.cos(2 * torch.pi * k * n / N) + torch.sin(2 * torch.pi * k * n / N)
+    
+    # Perform the matrix multiplication between input and the Hartley kernel
+    X = torch.matmul(x, cas)
     return X
 
-def idht(X: torch.Tensor):
-    n = X.numel()
-    X = dht(X)
-    x = X / n
-    return x
-
+def idht(X: torch.Tensor) -> torch.Tensor:
+    N = X.size(-1)
+    n = torch.prod(torch.tensor(X.size())).item()
+    
+    # Perform the forward DHT on the input
+    x_reconstructed = dht(X)
+    
+    # Scale the result by the number of elements
+    x_reconstructed /= n
+    
+    return x_reconstructed
+    
 def convolution_multiply(x, y):
     X = dht(x)
     Y = dht(y)
