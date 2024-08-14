@@ -25,7 +25,7 @@ def idht2d(X: torch.Tensor) -> torch.Tensor:
     n = torch.prod(torch.tensor(X.size())).item()
     
     # Perform the forward DHT on the input
-    x_reconstructed = dht(X)
+    x_reconstructed = dht2d(X)
     
     # Scale the result by the number of elements
     x_reconstructed /= n
