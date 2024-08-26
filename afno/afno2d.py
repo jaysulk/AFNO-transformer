@@ -70,8 +70,8 @@ class AFNO2D(nn.Module):
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
     
         # Reshape and align the dimensions of X_H_k and X_H_neg_k for broadcasting
-        #X_H_k = X_H_k.reshape(B, H, W, self.num_blocks, block_size)
-        #X_H_neg_k = X_H_neg_k.reshape(B, H, W, self.num_blocks, block_size)
+        X_H_k = X_H_k.reshape(B, H, W, self.num_blocks, block_size)
+        X_H_neg_k = X_H_neg_k.reshape(B, H, W, self.num_blocks, block_size)
     
         o1_H_k[:, :, :kept_modes] = F.relu(
             0.5 * (
