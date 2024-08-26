@@ -63,18 +63,15 @@ class AFNO2D(nn.Module):
         hidden_size_factor = self.hidden_size_factor
     
         # Ensure o1 and o2 dimensions match the expected sizes
-        o1_H_k = torch.zeros([B, H, W, self.num_blocks, block_size * hidden_size_factor], device=x.device)
-        o1_H_neg_k = torch.zeros([B, H, W, self.num_blocks, block_size * hidden_size_factor], device=x.device)
+        o1_H_k = torch.zeros([B, x.shape[1], x.shape[2], self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
+        o1_H_neg_k = torch.zeros([B, x.shape[1], x.shape[2], self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
     
         total_modes = N // 2 + 1
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
     
         # Reshape and align the dimensions of X_H_k and X_H_neg_k for broadcasting
-        X_H_k = X_H_k.reshape(B, H, W, self.num_blocks, block_size)
-        X_H_neg_k = X_H_neg_k.reshape(B, H, W, self.num_blocks, block_size)
-    
-        # Ensure the dimensions match for einsum
-        print(f"X_H_k shape: {X_H_k.shape}, w1 shape: {self.w1.shape}")
+        #X_H_k = X_H_k.reshape(B, H, W, self.num_blocks, block_size)
+        #X_H_neg_k = X_H_neg_k.reshape(B, H, W, self.num_blocks, block_size)
     
         o1_H_k[:, :, :kept_modes] = F.relu(
             0.5 * (
