@@ -30,17 +30,14 @@ def dht2d(x: torch.Tensor) -> torch.Tensor:
     return X
 
 
-def idht2d(X: torch.Tensor) -> torch.Tensor:
-    N = X.size(-1)
-    n = torch.prod(torch.tensor(X.size())).item()
-    
-    # Perform the forward DHT on the input
-    x_reconstructed = dht2d(X)
-    
-    # Scale the result by the number of elements
-    x_reconstructed /= n
-    
-    return x_reconstructed
+def idht2d(x: torch.Tensor) -> torch.Tensor:
+    # Assume that dht2d is already defined for NumPy
+    # Get the dimensions of X
+    dims = x.size()
+    n = torch.prod(torch.tensor(dims)).item()
+    dht = dht2d(x)
+    H = dht / n
+    return H
 
 class AFNO2D(nn.Module):
     def __init__(self, hidden_size, num_blocks=8, sparsity_threshold=0.01, hard_thresholding_fraction=1, hidden_size_factor=1):
