@@ -75,19 +75,19 @@ class AFNO2D(nn.Module):
     
         o1_H_k[:, :, :kept_modes] = F.relu(
             0.5 * (
-                torch.einsum('...bxyo,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[0]) -
-                torch.einsum('...bxyo,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[1]) +
-                torch.einsum('...bxyo,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[1]) +
-                torch.einsum('...bxyo,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[0])
+                torch.einsum('...bi,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[0]) -
+                torch.einsum('...bi,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[1]) +
+                torch.einsum('...bi,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[1]) +
+                torch.einsum('...bi,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[0])
             ) + self.b1[0]
         )
     
         o1_H_neg_k[:, :, :kept_modes] = F.relu(
             0.5 * (
-                torch.einsum('...bxyo,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[0]) -
-                torch.einsum('...bxyo,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[1]) +
-                torch.einsum('...bxyo,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[1]) +
-                torch.einsum('...bxyo,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[0])
+                torch.einsum('...bi,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[0]) -
+                torch.einsum('...bi,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[1]) +
+                torch.einsum('...bi,bio->...bo', X_H_neg_k[:, :, :kept_modes], self.w1[1]) +
+                torch.einsum('...bi,bio->...bo', X_H_k[:, :, :kept_modes], self.w1[0])
             ) + self.b1[1]
         )
     
@@ -97,19 +97,19 @@ class AFNO2D(nn.Module):
     
         o2_H_k[:, :, :kept_modes] = (
             0.5 * (
-                torch.einsum('...bxyo,bio->...bo', o1_H_k[:, :, :kept_modes], self.w2[0]) -
-                torch.einsum('...bxyo,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[1]) +
-                torch.einsum('...bxyo,bio->...bo', o1_H_k[:, :, :kept_modes], self.w2[1]) +
-                torch.einsum('...bxyo,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[0])
+                torch.einsum('...bi,bio->...bo', o1_H_k[:, :, :kept_modes], self.w2[0]) -
+                torch.einsum('...bi,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[1]) +
+                torch.einsum('...bi,bio->...bo', o1_H_k[:, :, :kept_modes], self.w2[1]) +
+                torch.einsum('...bi,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[0])
             ) + self.b2[0]
         )
     
         o2_H_neg_k[:, :, :kept_modes] = (
             0.5 * (
-                torch.einsum('...bxyo,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[0]) -
-                torch.einsum('...bxyo,bio->...bo', o2_H_k[:, :, :kept_modes], self.w2[1]) +
-                torch.einsum('...bxyo,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[1]) +
-                torch.einsum('...bxyo,bio->...bo', o2_H_k[:, :, :kept_modes], self.w2[0])
+                torch.einsum('...bi,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[0]) -
+                torch.einsum('...bi,bio->...bo', o2_H_k[:, :, :kept_modes], self.w2[1]) +
+                torch.einsum('...bi,bio->...bo', o1_H_neg_k[:, :, :kept_modes], self.w2[1]) +
+                torch.einsum('...bi,bio->...bo', o2_H_k[:, :, :kept_modes], self.w2[0])
             ) + self.b2[1]
         )
     
