@@ -68,7 +68,7 @@ class AFNO2D(nn.Module):
         x = x.reshape(B, H, W, C)
     
         # Replace FFT with DHT (assume x is already in DHT domain)
-        X_H_k = x  # DHT of x
+        X_H_k = dht2d(x)  # DHT of x
         X_H_neg_k = torch.roll(torch.flip(x, dims=[1, 2]), shifts=(1, 1), dims=[1, 2])
     
         block_size = self.block_size
@@ -130,6 +130,7 @@ class AFNO2D(nn.Module):
         x = F.softshrink(x, lambd=self.sparsity_threshold)
     
         # Transform back to spatial domain (assuming DHT-based iDHT here)
+        x = idht2d(x)
         x = x.reshape(B, H, W, C)
         x = x.reshape(B, N, C)
         x = x.type(dtype)
