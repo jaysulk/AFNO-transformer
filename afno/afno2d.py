@@ -127,7 +127,7 @@ class AFNO2D(nn.Module):
     
         # Combine positive and negative frequency components back
         x = o2_H_k + o2_H_neg_k
-        x = F.softshrink(x, lambd=self.sparsity_threshold)
+        #x = F.softshrink(x, lambd=self.sparsity_threshold)
     
         # Transform back to spatial domain (assuming DHT-based iDHT here)
         x = idht2d(x)
