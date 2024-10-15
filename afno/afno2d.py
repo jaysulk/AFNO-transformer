@@ -121,7 +121,7 @@ class AFNO2D(nn.Module):
         # Reconstruct the final output
         x = torch.stack([o2_real, o2_imag], dim=-1)
         x = F.softshrink(x, lambd=self.sparsity_threshold)
-        x = torch.view_as_real(x)  # View as real for DHT convolution output
+        #x = torch.view_as_real(x)  # View as real for DHT convolution output
         x = x.reshape(B, N, C)
         x = x.type(dtype)
         return x.real + bias.real
