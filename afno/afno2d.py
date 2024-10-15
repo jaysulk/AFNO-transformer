@@ -82,7 +82,8 @@ class AFNO2D(nn.Module):
 
         # Prepare flipped and rolled versions of the input for circular convolution
         X_H_k = x
-        X_H_neg_k = torch.roll(torch.flip(x, dims=[1, 2]), shifts=1, dims=[1, 2])
+        X_H_neg_k = torch.roll(torch.flip(x, dims=[1, 2]), shifts=(1, 1), dims=[1, 2])
+
 
         # Apply DHT-based convolution theorem
         o1_real[:, :, :kept_modes] = F.relu(
