@@ -30,6 +30,11 @@ def idht2d(x: torch.Tensor, dim=None) -> torch.Tensor:
     # Return the normalized inverse DHT
     return transformed / normalization_factor
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
 class AFNO2D(nn.Module):
     """
     hidden_size: channel dimension size
@@ -67,23 +72,20 @@ class AFNO2D(nn.Module):
         else:
             H, W = spatial_size
 
-        # Reshape input tensor
+        # Reshape input tensor while preserving the batch size
         x = x.reshape(B, H, W, C)
-        x = x.reshape(B, x.shape[1], x.shape[2], self.num_blocks, self.block_size)
 
-        # Perform the DHT convolution using the circular convolution theorem
-        o1_real = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
-        o1_imag = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
-        o2_real = torch.zeros([B, H, W, self.num_blocks, self.block_size], device=x.device)
-        o2_imag = torch.zeros([B, H, W, self.num_blocks, self.block_size], device=x.device)
+        # Perform the DHT-based convolution using the circular convolution theorem
+        X_H_k = x
+        X_H_neg_k = torch.roll(torch.flip(x, dims=[1, 2]), shifts=(1, 1), dims=[1, 2])
 
         total_modes = N // 2 + 1
         kept_modes = int(total_modes * self.hard_thresholding_fraction)
 
-        # Prepare flipped and rolled versions of the input for circular convolution
-        X_H_k = x
-        X_H_neg_k = torch.roll(torch.flip(x, dims=[1, 2]), shifts=(1, 1), dims=[1, 2])
-
+        o1_real = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
+        o1_imag = torch.zeros([B, H, W, self.num_blocks, self.block_size * self.hidden_size_factor], device=x.device)
+        o2_real = torch.zeros([B, H, W, self.num_blocks, self.block_size], device=x.device)
+        o2_imag = torch.zeros([B, H, W, self.num_blocks, self.block_size], device=x.device)
 
         # Apply DHT-based convolution theorem
         o1_real[:, :, :kept_modes] = F.relu(
@@ -118,10 +120,14 @@ class AFNO2D(nn.Module):
                    self.b2[1])
         )
 
-        # Reconstruct the final output
+        # Reconstruct the final output, ensuring the tensor shape is preserved
         x = torch.stack([o2_real, o2_imag], dim=-1)
         x = F.softshrink(x, lambd=self.sparsity_threshold)
         #x = torch.view_as_real(x)  # View as real for DHT convolution output
-        x = x.reshape(B, N, C)
+
+        # Make sure to preserve the shape by reshaping back to the original
+        x = x.reshape(B, H * W, C)
         x = x.type(dtype)
+
+        # Add the residual bias back to the output
         return x.real + bias.real
